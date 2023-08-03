@@ -5,10 +5,11 @@ namespace CleanArchitecture.Infraestructure.Persistence
 {
     public class StreamerDbContextSeed
     {
-        public static async Task SeedAsync(StreamerDbContext context, ILogger<StreamerDbContextSeed> looger)
+        public static async Task SeedAsync(StreamerDbContext context, ILoggerFactory loggerFactory)
         {
             if (!context.Streamers!.Any())
             {
+                var looger = loggerFactory.CreateLogger<StreamerDbContextSeed>();
                 context.Streamers!.AddRange(GetPreconfiguredStreamer());
                 await context.SaveChangesAsync();
                 looger.LogInformation("Se insertan nuevos records al db {context}", typeof(StreamerDbContext).Name);
