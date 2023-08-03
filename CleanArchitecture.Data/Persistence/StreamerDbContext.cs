@@ -43,13 +43,39 @@ namespace CleanArchitecture.Infraestructure.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Streamer>().HasMany(m => m.Videos).WithOne(m => m.Streamer).HasForeignKey(m => m.StreamerId).OnDelete(DeleteBehavior.Restrict); //Relacion 1 a muchos
+            modelBuilder.Entity<Streamer>()
+                .HasMany(m => m.Videos)
+                .WithOne(m => m.Streamer)
+                .HasForeignKey(m => m.StreamerId)
+                .OnDelete(DeleteBehavior.Restrict); //Relacion 1 a muchos
 
-            modelBuilder.Entity<Video>().HasMany(p => p.Actores)
-                .WithMany(t => t.Videos)
+            modelBuilder.Entity<Director>()
+               .HasMany(v => v.Videos)
+               .WithOne(d => d.Director)
+               .HasForeignKey(d => d.DirectorId)
+               .IsRequired()
+               .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Video>()
+                .HasMany(a => a.Actores)
+                .WithMany(v => v.Videos)
                 .UsingEntity<VideoActor>(
-                    pt => pt.HasKey(e => new { e.ActorId, e.VideoId })
+                    j => j
+                    .HasOne(p => p.Actor)
+                    .WithMany(p => p.VideoActors)
+                    .HasForeignKey(p => p.ActorId),
+                    j => j
+                    .HasOne(p => p.Video)
+                    .WithMany(p => p.VideoActors)
+                    .HasForeignKey(p => p.VideoId),
+                    j =>
+                    {
+                        j.HasKey(t => new { t.ActorId, t.VideoId });
+                    }
                 );
+
+            modelBuilder.Entity<VideoActor>()
+                .Ignore(va => va.Id);
 
             base.OnModelCreating(modelBuilder);
         }
