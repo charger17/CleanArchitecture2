@@ -1,6 +1,8 @@
 ﻿using CleanArchitecture.Application.Contracts.Persistence;
+using CleanArchitecture.Application.Specifications;
 using CleanArchitecture.Domain.Common;
 using CleanArchitecture.Infraestructure.Persistence;
+using CleanArchitecture.Infraestructure.Specification;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -120,6 +122,26 @@ namespace CleanArchitecture.Infraestructure.Repositories
         public void DeleteEntity(T Entity)
         {
             _context.Set<T>().Remove(Entity);
+        }
+
+        public async Task<T> GetByIdWithSpec(ISpecification<T> spec)
+        {
+            return await ApplySpecification(spec).FirstOrDefaultAsync();
+        }
+
+        public async Task<IReadOnlyCollection<T>> GetAllWithSpec(ISpecification<T> spec)
+        {
+            return await ApplySpecification(spec).ToListAsync();
+        }
+
+        public async Task<int> CountAsync(ISpecification<T> spec)
+        {
+            return await ApplySpecification(spec).CountAsync();
+        }
+
+        public IQueryable<T> ApplySpecification(ISpecification<T> spec)
+        {
+            return SpecificationEvaluator<T>.GetQuery(_context.Set<T>().AsQueryable(), spec);
         }
     }
 }

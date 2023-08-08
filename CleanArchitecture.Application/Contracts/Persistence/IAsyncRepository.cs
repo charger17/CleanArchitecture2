@@ -1,4 +1,5 @@
-﻿using CleanArchitecture.Domain.Common;
+﻿using CleanArchitecture.Application.Specifications;
+using CleanArchitecture.Domain.Common;
 using System.Linq.Expressions;
 
 namespace CleanArchitecture.Application.Contracts.Persistence
@@ -32,5 +33,11 @@ namespace CleanArchitecture.Application.Contracts.Persistence
         void UpdateEntity(T Entity);
 
         void DeleteEntity(T Entity);
+
+        Task<T> GetByIdWithSpec(ISpecification<T> spec);
+
+        Task<IReadOnlyCollection<T>> GetAllWithSpec(ISpecification<T> spec);
+
+        Task<int> CountAsync(ISpecification<T> spec);
     }
 }
