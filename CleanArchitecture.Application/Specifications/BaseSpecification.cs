@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 
 namespace CleanArchitecture.Application.Specifications
 {
@@ -20,6 +15,23 @@ namespace CleanArchitecture.Application.Specifications
         public Expression<Func<T, bool>> Criteria { get; }
 
         public List<Expression<Func<T, object>>> Includes { get; } = new List<Expression<Func<T, object>>>();
+
+        public Expression<Func<T, object>> OrderBy => throw new NotImplementedException();
+
+        public Expression<Func<T, object>> OrderByDescending => throw new NotImplementedException();
+
+        public int Take { get; private set; }
+
+        public int Skip { get; private set; }
+
+        protected void ApplyPaging(int skip, int take)
+        {
+            Skip = skip;
+            Take = take;
+            IsPagingEnable = true;
+        }
+
+        public bool IsPagingEnable { get; private set;}
 
         protected void AddInclude(Expression<Func<T, object>> includeExpression)
         {
