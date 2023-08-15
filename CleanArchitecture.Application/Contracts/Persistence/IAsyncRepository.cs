@@ -36,7 +36,7 @@ namespace CleanArchitecture.Application.Contracts.Persistence
 
         Task<T> GetByIdWithSpec(ISpecification<T> spec);
 
-        Task<IReadOnlyCollection<T>> GetAllWithSpec(ISpecification<T> spec);
+        Task<IReadOnlyList<T>> GetAllWithSpec(ISpecification<T> spec);
 
         Task<int> CountAsync(ISpecification<T> spec);
     }

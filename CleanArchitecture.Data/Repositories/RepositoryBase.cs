@@ -129,7 +129,7 @@ namespace CleanArchitecture.Infraestructure.Repositories
             return await ApplySpecification(spec).FirstOrDefaultAsync();
         }
 
-        public async Task<IReadOnlyCollection<T>> GetAllWithSpec(ISpecification<T> spec)
+        public async Task<IReadOnlyList<T>> GetAllWithSpec(ISpecification<T> spec)
         {
             return await ApplySpecification(spec).ToListAsync();
         }
