@@ -148,8 +148,6 @@ namespace CleanArchitecture.Identity.Services
 
             return new Tuple<string,string>(jwtToken, refreshToken.Token);
 
-
-
             //var claims = new[]
             //{
             //    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
@@ -170,9 +168,18 @@ namespace CleanArchitecture.Identity.Services
             //return jwtSecurityToken;
         }
 
+
         public Task<AuthResponse> RefreshToken(TokenRequest request)
         {
             throw new NotImplementedException();
+        }
+
+        private string GenerateRandomTokenCharacters(int length)
+        {
+            var random = new Random();
+
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            return new string(Enumerable.Repeat(chars, length).Select(x => x[random.Next(x.Length)]).ToArray());
         }
     }
 }
