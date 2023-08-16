@@ -9,5 +9,7 @@
         public string Audience { get; set; } = string.Empty;
 
         public double DurationInMinutes { get; set; }
+
+        public TimeSpan Expiretime { get; set; }
     }
 }
