@@ -8,7 +8,6 @@ namespace CleanArchitecture.Identity
     {
         public CleanArchitectureIdentityDbContext(DbContextOptions<CleanArchitectureIdentityDbContext> options) : base(options)
         {
-            
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -17,7 +16,7 @@ namespace CleanArchitecture.Identity
         }
 
         public virtual DbSet<RefreshToken>? RefreshTokens { get; set; }
-
         public virtual DbSet<ApplicationUser>? ApplicationUsers { get; set; }
+
     }
 }

@@ -33,6 +33,7 @@ namespace CleanArchitecture.API.Controllers
         }
 
         [HttpGet("pagination", Name = "paginationVideo")]
+        [Authorize]
         [ProducesResponseType(typeof(PaginationVm<VideosWithIncludesVm>), (int)HttpStatusCode.OK)]
         public async Task<ActionResult<PaginationVm<VideosWithIncludesVm>>> GetPaginationVideo([FromQuery] PaginationVideosQuery paginationVideosParams)
         {
