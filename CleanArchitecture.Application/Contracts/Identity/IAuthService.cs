@@ -8,5 +8,7 @@ namespace CleanArchitecture.Application.Contracts.Identity
 
         Task<RegistrationResponse> Register(RegistrationRequest request);
 
+        Task<AuthResponse> RefreshToken(TokenRequest request);
+
     }
 }

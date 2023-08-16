@@ -1,24 +1,22 @@
-﻿using CleanArchitecture.Identity.Configurations;
-using CleanArchitecture.Identity.Models;
+﻿using CleanArchitecture.Identity.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace CleanArchitecture.Identity
 {
-    public class CleanArchitectureIdentityDbContext : IdentityDbContext<ApplicationUser>
+    public class CleanArchitectureIdentityDbContext : IdentityDbContext
     {
         public CleanArchitectureIdentityDbContext(DbContextOptions<CleanArchitectureIdentityDbContext> options) : base(options)
         {
-            
         }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.ApplyConfiguration(new RoleConfiguration());
-            builder.ApplyConfiguration(new UserConfiguration());
-            builder.ApplyConfiguration(new UserRoleConfiguration());
-
             base.OnModelCreating(builder);
         }
+
+        public virtual DbSet<RefreshToken>? RefreshTokens { get; set; }
+        public virtual DbSet<ApplicationUser>? ApplicationUsers { get; set; }
+
     }
 }
