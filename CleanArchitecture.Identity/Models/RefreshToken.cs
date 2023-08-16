@@ -17,6 +17,8 @@ namespace CleanArchitecture.Identity.Models
 
         public DateTime ExpireDate { get; set; }
 
+        public DateTime CreateDate { get; set; }
+
         [ForeignKey(nameof(UserId))]
         public IdentityUser? User { get; set; }
 

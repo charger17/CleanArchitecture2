@@ -13,15 +13,19 @@ namespace CleanArchitecture.Identity.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
         private readonly JwtSettings _jwtSettings;
+        private readonly CleanArchitectureIdentityDbContext _context;
+        private readonly TokenValidationParameters _tokenValidationParameters;
 
-        public AuthService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<JwtSettings> jwtSettings)
+        public AuthService(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, JwtSettings jwtSettings, CleanArchitectureIdentityDbContext cleanArchitectureDbContext, TokenValidationParameters tokenValidationParameters)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _jwtSettings = jwtSettings.Value;
+            _jwtSettings = jwtSettings;
+            _context = cleanArchitectureDbContext;
+            _tokenValidationParameters = tokenValidationParameters;
         }
 
         public async Task<AuthResponse> Login(AuthRequest request)
@@ -94,8 +98,11 @@ namespace CleanArchitecture.Identity.Services
         }
 
 
-        private async Task<JwtSecurityToken> GenerateToken(ApplicationUser user)
+        private async Task<Tuple<string, string>> GenerateToken(IdentityUser user)
         {
+            var jwtTokenHandler = new JwtSecurityTokenHandler();
+            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_jwtSettings.Key));
+
             var userClaims = await _userManager.GetClaimsAsync(user);
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -107,24 +114,65 @@ namespace CleanArchitecture.Identity.Services
                 roleClaims.Add(new Claim(ClaimTypes.Role, role));
             }
 
-            var claims = new[]
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(CustomClaimTypes.Uid, user.Id),
-            }.Union(userClaims).Union(roleClaims);
+                Subject = new ClaimsIdentity(new[]
+                    {
+                        new Claim("id", user.Id),
+                        new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    }.Union(userClaims).Union(roleClaims)),
+                    Expires = DateTime.UtcNow.Add(_jwtSettings.Expiretime),
+                    SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature)
+            };
 
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
-            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
-            var jwtSecurityToken = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer,
-                audience: _jwtSettings.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes),
-                signingCredentials: signingCredentials
-                );
+            var token = jwtTokenHandler.CreateToken(tokenDescriptor);
 
-            return jwtSecurityToken;
+            var jwtToken = jwtTokenHandler.WriteToken(token);
+
+            var refreshToken = new RefreshToken
+            {
+                JwtId = token.Id,
+                IsUsed = false,
+                IsRevoked = false,
+                UserId = user.Id,
+                CreateDate = DateTime.UtcNow,
+                ExpireDate = DateTime.UtcNow.AddMonths(6),
+                Token = $"{GenerateRandomTokenCharacters(35)}{Guid.NewGuid}"
+            };
+
+            await _context.RefreshTokens!.AddAsync(refreshToken);
+
+            await _context.SaveChangesAsync();
+
+            return new Tuple<string,string>(jwtToken, refreshToken.Token);
+
+
+
+            //var claims = new[]
+            //{
+            //    new Claim(JwtRegisteredClaimNames.Sub, user.UserName),
+            //    new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            //    new Claim(CustomClaimTypes.Uid, user.Id),
+            //}.Union(userClaims).Union(roleClaims);
+
+            //var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+            //var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256);
+            //var jwtSecurityToken = new JwtSecurityToken(
+            //    issuer: _jwtSettings.Issuer,
+            //    audience: _jwtSettings.Audience,
+            //    claims: claims,
+            //    expires: DateTime.UtcNow.AddMinutes(_jwtSettings.DurationInMinutes),
+            //    signingCredentials: signingCredentials
+            //    );
+
+            //return jwtSecurityToken;
+        }
+
+        public Task<AuthResponse> RefreshToken(TokenRequest request)
+        {
+            throw new NotImplementedException();
         }
     }
 }
